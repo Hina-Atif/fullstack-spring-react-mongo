@@ -1,0 +1,29 @@
+# Node and React
+node_modules/
+build/
+.env
+
+
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+
+
+# IDEs
+.vscode/
+.idea/
+
+
+# Docker
+*.tar
+
+
+# OS
+Thumbs.db
+.DS_Store
+
+
+# Git
+.git
