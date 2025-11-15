@@ -3,6 +3,20 @@ pipeline {
 
     stages {
 
+        stage('Checkout Code') {
+            steps {
+                echo "Pulling code from GitHub..."
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/Hina-Atif/fullstack-spring-react-mongo.git',
+                        credentialsId: 'github-token'
+                    ]]
+                ])
+            }
+        }
+
         stage('Build Frontend Image') {
             steps {
                 echo "Building frontend Docker image..."
