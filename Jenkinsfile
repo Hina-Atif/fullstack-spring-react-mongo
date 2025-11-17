@@ -18,7 +18,7 @@ pipeline {
         stage('Build Backend JAR') {
             steps {
                 dir("${BACKEND_DIR}") {
-                    bat 'mvn clean package -DskipTests'
+                    sh 'mvn clean package -DskipTests'
                 }
             }
         }
@@ -26,7 +26,7 @@ pipeline {
         stage('Build Backend Docker Image') {
             steps {
                 dir("${BACKEND_DIR}") {
-                    bat 'docker build -t %DOCKERHUB_USER%/backend-app:latest .'
+                    sh 'docker build -t $DOCKERHUB_USER/backend-app:latest .'
                 }
             }
         }
@@ -34,27 +34,27 @@ pipeline {
         stage('Build Frontend Docker Image') {
             steps {
                 dir("${FRONTEND_DIR}") {
-                    bat 'docker build -t %DOCKERHUB_USER%/frontend-app:latest .'
+                    sh 'docker build -t $DOCKERHUB_USER/frontend-app:latest .'
                 }
             }
         }
 
         stage('Run Containers for Testing') {
             steps {
-                bat 'docker stop backend-app || echo Not running'
-                bat 'docker rm backend-app || echo Not existing'
-                bat 'docker stop frontend-app || echo Not running'
-                bat 'docker rm frontend-app || echo Not existing'
+                sh 'docker stop backend-app || echo "Not running"'
+                sh 'docker rm backend-app || echo "Not existing"'
+                sh 'docker stop frontend-app || echo "Not running"'
+                sh 'docker rm frontend-app || echo "Not existing"'
 
-                bat 'docker run -d -p 8081:8080 --name backend-app %DOCKERHUB_USER%/backend-app:latest'
-                bat 'docker run -d -p 3000:80 --name frontend-app %DOCKERHUB_USER%/frontend-app:latest'
+                sh 'docker run -d -p 8081:8080 --name backend-app $DOCKERHUB_USER/backend-app:latest'
+                sh 'docker run -d -p 3000:80 --name frontend-app $DOCKERHUB_USER/frontend-app:latest'
             }
         }
     }
 
     post {
         always {
-            bat 'docker ps -a'
+            sh 'docker ps -a'
         }
     }
 }
