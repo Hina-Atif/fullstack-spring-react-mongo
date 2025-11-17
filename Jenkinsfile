@@ -4,7 +4,7 @@ pipeline {
     environment {
         BACKEND_DIR = "backend"
         FRONTEND_DIR = "frontend"
-        DOCKERHUB_USER = "hina"   // change if your DockerHub username is different
+        DOCKERHUB_USER = "hina"
     }
 
     stages {
@@ -41,23 +41,7 @@ pipeline {
 
         stage('Run Containers for Testing') {
             steps {
-                // Stop and remove old containers safely
                 bat 'docker stop backend-app || echo Not running'
                 bat 'docker rm backend-app || echo Not existing'
                 bat 'docker stop frontend-app || echo Not running'
-                bat 'docker rm frontend-app || echo Not existing'
-
-                // Run containers
-                bat 'docker run -d -p 8081:8080 --name backend-app %DOCKERHUB_USER%/backend-app:latest'
-                bat 'docker run -d -p 3000:80 --name frontend-app %DOCKERHUB_USER%/frontend-app:latest'
-            }
-        }
-    }
-
-    post {
-        always {
-            bat 'docker ps -a'
-        }
-    }
-}
-
+                bat 'docker rm frontend-app || e
