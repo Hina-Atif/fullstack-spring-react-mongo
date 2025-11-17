@@ -40,13 +40,21 @@ pipeline {
         }
 
         stage('Run Containers for Testing') {
-    steps {
-        bat 'docker stop backend-app || echo Not running'
-        bat 'docker rm backend-app || echo Not existing'
-        bat 'docker stop frontend-app || echo Not running'
-        bat 'docker rm frontend-app || echo Not existing'
+            steps {
+                bat 'docker stop backend-app || echo Not running'
+                bat 'docker rm backend-app || echo Not existing'
+                bat 'docker stop frontend-app || echo Not running'
+                bat 'docker rm frontend-app || echo Not existing'
 
-        bat 'docker run -d -p 8081:8080 --name backend-app %DOCKERHUB_USER%/backend-app:latest'
-        bat 'docker run -d -p 3000:80 --name frontend-app %DOCKERHUB_USER%/frontend-app:latest'
+                bat 'docker run -d -p 8081:8080 --name backend-app %DOCKERHUB_USER%/backend-app:latest'
+                bat 'docker run -d -p 3000:80 --name frontend-app %DOCKERHUB_USER%/frontend-app:latest'
+            }
+        }
+    }
+
+    post {
+        always {
+            bat 'docker ps -a'
+        }
     }
 }
