@@ -1,62 +1,62 @@
 pipeline {
     agent any
 
+    environment {
+        BACKEND_DIR = "backend"
+        FRONTEND_DIR = "frontend"
+        DOCKERHUB_USER = "hina"   // change if your DockerHub username is different
+    }
+
     stages {
 
         stage('Checkout Code') {
             steps {
-                echo "Pulling code from GitHub..."
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: '*/main']],
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/Hina-Atif/fullstack-spring-react-mongo.git',
-                        credentialsId: 'github-token'
-                    ]]
-                ])
+                checkout scm
             }
         }
 
-        stage('Build Frontend Image') {
+        stage('Build Backend JAR') {
             steps {
-                echo "Building frontend Docker image..."
-                sh """
-                cd frontend
-                docker build -t hina-frontend:latest .
-                """
+                dir("${BACKEND_DIR}") {
+                    bat 'mvn clean package -DskipTests'
+                }
             }
         }
 
-        stage('Build Backend Image') {
+        stage('Build Backend Docker Image') {
             steps {
-                echo "Building backend Docker image..."
-                sh """
-                cd backend
-                docker build -t hina-backend:latest .
-                """
+                dir("${BACKEND_DIR}") {
+                    bat 'docker build -t %DOCKERHUB_USER%/backend-app:latest .'
+                }
             }
         }
 
-        stage('Stop Old Containers') {
+        stage('Build Frontend Docker Image') {
             steps {
-                echo "Stopping old containers..."
-                sh """
-                docker stop frontend || true
-                docker stop backend || true
-                docker rm frontend || true
-                docker rm backend || true
-                """
+                dir("${FRONTEND_DIR}") {
+                    bat 'docker build -t %DOCKERHUB_USER%/frontend-app:latest .'
+                }
             }
         }
 
-        stage('Run New Containers') {
+        stage('Run Containers for Testing') {
             steps {
-                echo "Running new containers..."
-                sh """
-                docker run -d --name frontend -p 3000:3000 hina-frontend:latest
-                docker run -d --name backend -p 5000:5000 hina-backend:latest
-                """
+                // Stop and clean old containers if exist
+                bat 'docker stop backend-app || echo Not running'
+                bat 'docker rm backend-app || echo Not existing'
+                bat 'docker stop frontend-app || echo Not running'
+                bat 'docker rm frontend-app || echo Not existing'
+
+                // Run backend & frontend containers
+                bat 'docker run -d -p 8080:8080 --name backend-app %DOCKERHUB_USER%/backend-app:latest'
+                bat 'docker run -d -p 3000:80 --name frontend-app %DOCKERHUB_USER%/frontend-app:latest'
             }
+        }
+    }
+
+    post {
+        always {
+            bat 'docker ps -a'
         }
     }
 }
